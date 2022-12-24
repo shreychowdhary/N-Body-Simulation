@@ -10,8 +10,8 @@ export class Body {
     }
 
     updatePosition(position) {
-        if (this.pastPositionCounter % 10 === 0) {
-            if (this.pastPositions.length >= 100) {
+        if (this.pastPositionCounter % 5 === 0) {
+            if (this.pastPositions.length >= 200) {
                 this.pastPositions.shift();
             }
             this.pastPositions.push(this.position);
@@ -20,4 +20,6 @@ export class Body {
         this.pastPositionCounter++;
         this.position = position;
     } 
+
+    
 }
