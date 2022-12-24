@@ -2,10 +2,11 @@ import { Body } from "./body.js";
 import { Vector } from "./vector.js";
 
 export class Simulator {
-    constructor(bodies, G) {
+    constructor(bodies, G, softening = 0.005) {
         this.bodies = bodies;
         this.lastTimestep = 0;
         this.G = G;
+        this.softening = softening;
     }
 
     static figure8() {
@@ -20,8 +21,9 @@ export class Simulator {
         const bodies = [];
 
         for (let i = 0; i < numBodies; i++) {
-            this.bodies.push(new Body(Vector.random([-.5,-.5], [.5,.5]), Vector.zero(2), 1));
+            bodies.push(new Body(Vector.random([-.5,-.5], [.5,.5]), Vector.zero(2), 1));
         }
+
         return new Simulator(bodies, G);
     }
 
@@ -39,8 +41,10 @@ export class Simulator {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         this.bodies.forEach(body => {
             const position = body.position.elements;
+            const x = position[0]*(canvas.width/4)+(canvas.width/2);
+            const y = position[1]*(canvas.height/4)+(canvas.height/2)
             ctx.beginPath();
-            ctx.arc(position[0]*(canvas.width/4)+(canvas.width/2), position[1]*(canvas.height/4)+(canvas.height/2), 8, 0, 2 * Math.PI);
+            ctx.arc(x, y, 15, 0, 2 * Math.PI);
             ctx.strokeStyle = "white";
             ctx.stroke();
         });
@@ -58,7 +62,7 @@ export class Simulator {
                 const difference = bodyA.position.sub(bodyB.position);
                 const magnitude = difference.magnitude;
                 
-                const acceleration = difference.multiply(- this.G * bodyB.mass / Math.pow(magnitude, 3));
+                const acceleration = difference.multiply(- this.G * bodyB.mass / Math.max(Math.pow(magnitude, 3), this.softening));
 
                 bodyA.velocity = bodyA.velocity.add(acceleration.multiply(timeDelta/2));
             });
@@ -78,7 +82,7 @@ export class Simulator {
                 const difference = bodyA.position.sub(bodyB.position);
                 const magnitude = difference.magnitude;
                 
-                const acceleration = difference.multiply(- this.G * bodyB.mass / Math.pow(magnitude, 3));
+                const acceleration = difference.multiply(- this.G * bodyB.mass / Math.max(Math.pow(magnitude, 3), this.softening));
 
                 bodyA.velocity = bodyA.velocity.add(acceleration.multiply(timeDelta/2));
             });
