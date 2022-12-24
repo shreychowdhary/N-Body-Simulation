@@ -1,7 +1,7 @@
 import { Vector } from "./vector.js";
 
 export class Drawer {
-    constructor(canvas, ctx, noiseLevel = 35) {
+    constructor(canvas, ctx, noiseLevel = 30) {
         this.canvas = canvas;
         this.ctx = ctx;
         this.massToSizeScale = 90;
