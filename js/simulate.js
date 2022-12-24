@@ -2,11 +2,12 @@ import { Body } from "./body.js";
 import { Vector } from "./vector.js";
 
 export class Simulator {
-    constructor(bodies, G, softening = 0.005) {
+    constructor(bodies, G, softening = 0.005, speed = 0.2) {
         this.bodies = bodies;
         this.lastTimestep = 0;
         this.G = G;
         this.softening = softening;
+        this.speed = speed;
     }
 
     static figure8() {
@@ -28,7 +29,7 @@ export class Simulator {
     }
 
     step(canvas, ctx, timestamp) {
-        const timeDelta =  Math.min(timestamp - this.lastTimestep, 100)/1000;
+        const timeDelta =  this.speed * Math.min(timestamp - this.lastTimestep, 100)/1000;
         this.updateProperties(timeDelta);
         this.draw(canvas, ctx);
         this.lastTimestep = timestamp;
@@ -41,12 +42,45 @@ export class Simulator {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         this.bodies.forEach(body => {
             const position = body.position.elements;
-            const x = position[0]*(canvas.width/4)+(canvas.width/2);
-            const y = position[1]*(canvas.height/4)+(canvas.height/2)
-            ctx.beginPath();
-            ctx.arc(x, y, 15, 0, 2 * Math.PI);
+            const x = position[0]*(canvas.width/2.5)+(canvas.width/2);
+            const y = position[1]*(canvas.height/2.5)+(canvas.height/2);
+
+            // Draw Trail
+            ctx.lineCap = "round";
+            ctx.lineWidth = "7";
             ctx.strokeStyle = "white";
+            ctx.beginPath();
+            const startX = body.pastPositions[0].elements[0]*(canvas.width/2.5)+(canvas.width/2);
+            const startY = body.pastPositions[0].elements[1]*(canvas.height/2.5)+(canvas.height/2);
+            ctx.moveTo(startX, startY);
+            for (let position of body.pastPositions) {
+                const curX = position.elements[0]*(canvas.width/2.5)+(canvas.width/2);
+                const curY = position.elements[1]*(canvas.height/2.5)+(canvas.height/2);
+                if (new Vector([curX,curY]).sub(new Vector([x,y])).magnitude < 25) {
+                    break;
+                } 
+                ctx.lineTo(curX, curY);
+            }
             ctx.stroke();
+        });
+
+        this.bodies.forEach(body => {
+            const position = body.position.elements;
+            const x = position[0]*(canvas.width/2.5)+(canvas.width/2);
+            const y = position[1]*(canvas.height/2.5)+(canvas.height/2);
+            // Draw Body
+            ctx.beginPath();
+            ctx.arc(x, y, 80, 0, 2 * Math.PI);
+            const grad = ctx.createRadialGradient(x, y, 25, x, y, 80);
+            grad.addColorStop(0, "#f1735a");
+            grad.addColorStop(0.075, "rgba(229, 135, 179, .95");
+            grad.addColorStop(0.125, "rgba(229, 135, 179, .9)");
+            grad.addColorStop(0.35, "rgba(130, 118, 179, .75)");
+            grad.addColorStop(0.5, "rgba(70, 98, 165, .6)");
+            grad.addColorStop(.675, "rgba(40, 53, 86, .4)");
+            grad.addColorStop(1, "rgba(40, 33, 35, .1)");
+            ctx.fillStyle = grad;
+            ctx.fill();
         });
 
     }
@@ -70,7 +104,7 @@ export class Simulator {
 
         // Update Position
         this.bodies.forEach((body) => {
-            body.position = body.position.add(body.velocity.multiply(timeDelta));
+            body.updatePosition(body.position.add(body.velocity.multiply(timeDelta)));
         });
 
         // Update Velocity 
