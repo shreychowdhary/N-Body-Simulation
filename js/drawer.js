@@ -1,10 +1,10 @@
 import { Vector } from "./vector.js";
 
 export class Drawer {
-    constructor(canvas, ctx, noiseLevel = 30) {
+    constructor(canvas, ctx, noiseLevel = 25) {
         this.canvas = canvas;
         this.ctx = ctx;
-        this.massToSizeScale = 90;
+        this.massToSizeScale = 80;
         this.canvasScaling = 2.5/2;
         this.noiseLevel = noiseLevel
     }
@@ -46,7 +46,7 @@ export class Drawer {
         const radius = this.massToSizeScale * body.mass;
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
-        const grad = this.ctx.createRadialGradient(x, y, radius * 3/8, x, y, radius);
+        const grad = this.ctx.createRadialGradient(x, y, radius * .5, x, y, radius);
         grad.addColorStop(0, "#f1735a");
         grad.addColorStop(0.075, "rgba(229, 135, 179, .95");
         grad.addColorStop(0.125, "rgba(229, 135, 179, .9)");
@@ -76,11 +76,11 @@ export class Drawer {
         for (let i = 0; i < image.data.length; i+=4) {
             let x = (i % (radius*8))/4 - radius;
             let y = (i / (radius*8)) - radius;
-            const threshold = radius*(0.65 + Math.random()*0.35);
+            const threshold = radius*(0.8 + Math.random()*0.2);
             const dist = new Vector([x,y]).magnitude;
             if (dist < threshold) {
                 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-                const noise = (Math.random() - 0.5) * (this.noiseLevel / (1+(dist/threshold)*(dist/threshold)));
+                const noise = (Math.random() - 0.5) * (this.noiseLevel );
                 image.data[i] = clamp(image.data[i]+noise, 0, 255);
                 image.data[i+1] = clamp(image.data[i+1]+noise, 0, 255);
                 image.data[i+2] = clamp(image.data[i+2]+noise, 0, 255);
