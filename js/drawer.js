@@ -1,0 +1,91 @@
+import { Vector } from "./vector.js";
+
+export class Drawer {
+    constructor(canvas, ctx, noiseLevel = 35) {
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.massToSizeScale = 90;
+        this.canvasScaling = 2.5/2;
+        this.noiseLevel = noiseLevel
+    }
+
+    draw(bodies) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
+        this.ctx.fillStyle = "#282123";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        bodies.forEach(body => {
+            this.drawTrail(body);
+        });
+
+        bodies.forEach(body => {
+            this.drawBody(body);
+        });
+
+    }
+    
+    drawTrail(body) {
+        const [x,y] = this.calculateCanvasPosition(body.position);
+
+        // Draw Trail
+        this.ctx.lineCap = "round";
+        this.ctx.lineWidth = "7";
+        this.ctx.strokeStyle = "rgba(199,193,195,1)";
+        this.ctx.beginPath();
+        const [startX, startY] = this.calculateCanvasPosition(body.pastPositions[0]);
+        this.ctx.moveTo(startX, startY);
+        for (let position of body.pastPositions) {
+            const [curX, curY] = this.calculateCanvasPosition(position);
+            this.ctx.lineTo(curX, curY);
+        }
+        this.ctx.stroke();
+    }
+
+    drawBody(body) {
+        const [x,y] = this.calculateCanvasPosition(body.position);
+        // Draw Body
+        const radius = this.massToSizeScale * body.mass;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        const grad = this.ctx.createRadialGradient(x, y, radius * 3/8, x, y, radius);
+        grad.addColorStop(0, "#f1735a");
+        grad.addColorStop(0.075, "rgba(229, 135, 179, .95");
+        grad.addColorStop(0.125, "rgba(229, 135, 179, .9)");
+        grad.addColorStop(0.35, "rgba(130, 118, 179, .75)");
+        grad.addColorStop(0.5, "rgba(70, 98, 165, .6)");
+        grad.addColorStop(.7, "rgba(40, 53, 86, .4)");
+        grad.addColorStop(1, "rgba(40, 33, 35, 0)");
+        this.ctx.fillStyle = grad;
+        this.ctx.fill();
+
+        // Draw noise
+        this.drawNoise(body);
+    }
+
+    calculateCanvasPosition(position) {
+        return [
+            position.elements[0]*(canvas.width/(2*this.canvasScaling))+(canvas.width/2),
+            position.elements[1]*(canvas.height/(2*this.canvasScaling))+(canvas.height/2)
+        ];
+    }
+
+    drawNoise(body) {
+        const radius = this.massToSizeScale * body.mass;
+        const [centerX, centerY] = this.calculateCanvasPosition(body.position);
+        const image = this.ctx.getImageData(centerX-radius,centerY-radius,radius*2,radius*2);
+        let i = 0;
+        for (let i = 0; i < image.data.length; i+=4) {
+            let x = (i % (radius*8))/4 - radius;
+            let y = (i / (radius*8)) - radius;
+            const threshold = radius*(0.65 + Math.random()*0.35);
+            const dist = new Vector([x,y]).magnitude;
+            if (dist < threshold) {
+                const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+                const noise = (Math.random() - 0.5) * (this.noiseLevel / (1+(dist/threshold)*(dist/threshold)));
+                image.data[i] = clamp(image.data[i]+noise, 0, 255);
+                image.data[i+1] = clamp(image.data[i+1]+noise, 0, 255);
+                image.data[i+2] = clamp(image.data[i+2]+noise, 0, 255);
+            } 
+        }
+        this.ctx.putImageData(image, centerX-radius, centerY-radius);
+    }
+}
