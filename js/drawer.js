@@ -65,11 +65,10 @@ export class Drawer {
         const radius = this.calculateBodyRadius(body);
         const [centerX, centerY] = this.calculateCanvasPosition(body.position);
         const image = this.ctx.getImageData(centerX-radius,centerY-radius,radius*2,radius*2);
-        let i = 0;
-        for (let i = 0; i < image.data.length; i+=4) {
-            let x = (i % (radius*8))/4 - radius;
-            let y = (i / (radius*8)) - radius;
-            const threshold = radius*(0.8 + Math.random()*0.2);
+        for (let i = 0; i < image.data.length; i += 4) {
+            let x = (i/4 % (image.width)) - radius;
+            let y =  Math.floor(i / 4 / image.width) - radius;
+            const threshold = radius*(0.7 + Math.random()*0.15);
             const dist = new Vector([x,y]).magnitude;
             if (dist < threshold) {
                 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);

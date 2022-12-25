@@ -6,16 +6,6 @@ function resizeCanvas(canvas) {
     canvas.height = window.innerHeight;
 }
 
-function loop(timestamp) {
-    var progress = timestamp - lastRender
-
-    update(progress)
-    draw()
-
-    lastRender = timestamp
-    window.requestAnimationFrame(loop)
-}
-
 function main() {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
