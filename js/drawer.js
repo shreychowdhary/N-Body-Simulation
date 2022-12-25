@@ -4,7 +4,7 @@ export class Drawer {
     constructor(canvas, ctx, noiseLevel = 25) {
         this.canvas = canvas;
         this.ctx = ctx;
-        this.massToSizeScale = 80;
+        this.massToSizeScale = 60;
         this.canvasScaling = 1;
         this.noiseLevel = noiseLevel
     }
@@ -28,7 +28,7 @@ export class Drawer {
 
         // Draw Trail
         this.ctx.lineCap = "round";
-        this.ctx.lineWidth = "7";
+        this.ctx.lineWidth = "5";
         this.ctx.strokeStyle = "rgba(199,193,195,1)";
         this.ctx.beginPath();
         const [startX, startY] = this.calculateCanvasPosition(body.pastPositions[0]);
