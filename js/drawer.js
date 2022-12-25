@@ -4,8 +4,8 @@ export class Drawer {
     constructor(canvas, ctx, noiseLevel = 25) {
         this.canvas = canvas;
         this.ctx = ctx;
-        this.massToSizeScale = 60;
-        this.canvasScaling = 1;
+        this.massToSizeScale = .175;
+        this.canvasScaling = 1.25;
         this.noiseLevel = noiseLevel
     }
 
@@ -43,7 +43,7 @@ export class Drawer {
     drawBody(body) {
         const [x,y] = this.calculateCanvasPosition(body.position);
         // Draw Body
-        const radius = this.massToSizeScale * body.mass;
+        const radius = this.calculateBodyRadius(body);
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
         const grad = this.ctx.createRadialGradient(x, y, radius * .5, x, y, radius);
@@ -61,16 +61,8 @@ export class Drawer {
         this.drawNoise(body);
     }
 
-    calculateCanvasPosition(position) {
-        const canvasSize = Math.min(this.canvas.width, this.canvas.height);
-        return [
-            position.elements[0]*(canvasSize/(2*this.canvasScaling))+(this.canvas.width/2),
-            position.elements[1]*(canvasSize/(2*this.canvasScaling))+(this.canvas.height/2)
-        ];
-    }
-
     drawNoise(body) {
-        const radius = this.massToSizeScale * body.mass;
+        const radius = this.calculateBodyRadius(body);
         const [centerX, centerY] = this.calculateCanvasPosition(body.position);
         const image = this.ctx.getImageData(centerX-radius,centerY-radius,radius*2,radius*2);
         let i = 0;
@@ -88,5 +80,18 @@ export class Drawer {
             } 
         }
         this.ctx.putImageData(image, centerX-radius, centerY-radius);
+    }
+
+    calculateCanvasPosition(position) {
+        const canvasSize = Math.min(this.canvas.width, this.canvas.height);
+        return [
+            position.elements[0]*(canvasSize/(2*this.canvasScaling))+(this.canvas.width/2),
+            position.elements[1]*(canvasSize/(2*this.canvasScaling))+(this.canvas.height/2)
+        ];
+    }
+
+    calculateBodyRadius(body) {
+        const canvasSize = Math.min(this.canvas.width, this.canvas.height);
+        return (canvasSize/(2*this.canvasScaling)) * this.massToSizeScale * body.mass;
     }
 }
