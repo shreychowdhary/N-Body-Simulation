@@ -5,7 +5,7 @@ export class Drawer {
         this.canvas = canvas;
         this.ctx = ctx;
         this.massToSizeScale = 80;
-        this.canvasScaling = 2.5/2;
+        this.canvasScaling = 1;
         this.noiseLevel = noiseLevel
     }
 
@@ -62,9 +62,10 @@ export class Drawer {
     }
 
     calculateCanvasPosition(position) {
+        const canvasSize = Math.min(this.canvas.width, this.canvas.height);
         return [
-            position.elements[0]*(canvas.width/(2*this.canvasScaling))+(canvas.width/2),
-            position.elements[1]*(canvas.height/(2*this.canvasScaling))+(canvas.height/2)
+            position.elements[0]*(canvasSize/(2*this.canvasScaling))+(this.canvas.width/2),
+            position.elements[1]*(canvasSize/(2*this.canvasScaling))+(this.canvas.height/2)
         ];
     }
 
@@ -80,7 +81,7 @@ export class Drawer {
             const dist = new Vector([x,y]).magnitude;
             if (dist < threshold) {
                 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-                const noise = (Math.random() - 0.5) * (this.noiseLevel );
+                const noise = (Math.random() - 0.5) * this.noiseLevel;
                 image.data[i] = clamp(image.data[i]+noise, 0, 255);
                 image.data[i+1] = clamp(image.data[i+1]+noise, 0, 255);
                 image.data[i+2] = clamp(image.data[i+2]+noise, 0, 255);
